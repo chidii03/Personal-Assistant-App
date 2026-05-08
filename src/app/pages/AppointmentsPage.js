@@ -279,7 +279,7 @@ const AppointmentsPage = () => {
             onClick={async () => {
               const userId = currentUser?.uid || 'anonymous';
               try {
-                const response = await fetch(`http://localhost:5000/api/appointments/${id}?userId=${userId}`, {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${id}?userId=${userId}`, {
                   method: 'DELETE',
                 });
                 if (!response.ok) {

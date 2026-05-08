@@ -8,7 +8,6 @@ import { useAuth } from '@/components/AuthContext'; // Assuming AuthContext prov
 
 const RemindersPage = () => {
   const { currentUser } = useAuth(); // Get the current authenticated user
-
   const [reminders, setReminders] = useState([]); // State to hold active reminders
   const [hasFetchedInitial, setHasFetchedInitial] = useState(false); // To prevent multiple initial toasts
 
@@ -19,7 +18,7 @@ const RemindersPage = () => {
 
     try {
       // Fetch appointments (which are used as reminders) from your backend
-      const response = await fetch(`http://localhost:5000/api/appointments?userId=${userId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?userId=${userId}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

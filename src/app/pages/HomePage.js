@@ -327,7 +327,7 @@ const HomePage = ({ currentTime }) => {
   ];
 
   return (
-    <div className="bg-gradient-to-b from-purple-900 via-black to-purple-800 min-h-screen overflow-hidden w-full pt-5">
+    <div className="bg-gradient-to-b from-purple-900 via-black to-purple-800 min-h-screen overflow-hidden w-full mt-12">
       {/* Hero Section - Full Width */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden w-full">
         <div className="absolute inset-0 z-0">
@@ -872,8 +872,6 @@ const HomePage = ({ currentTime }) => {
           </div>
         </div>
       </section>
-
-      {/* Your custom Footer component will blend seamlessly here if it has a matching gradient from purple-900/80 */}
     </div>
   );
 };
