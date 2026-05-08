@@ -1,15 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  turbopack: {},
 
   images: {
-    domains: ["localhost", "images.unsplash.com"],
     remotePatterns: [
       {
-        protocol: "https",
-        hostname: "**.unsplash.com",
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**',
       },
     ],
   },
@@ -28,6 +33,7 @@ const nextConfig = {
       child_process: false,
       worker_threads: false,
     };
+
     return config;
   },
 };
