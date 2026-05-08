@@ -854,7 +854,7 @@ const ContactsPage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="w-full min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-800 text-white"
+      className="w-full min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-800 text-white mt-12"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col sm:flex-row items-center justify-between mb-6">

@@ -1,19 +1,33 @@
-'use client';
+"use client";
 
-import { motion} from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
-import {Bell, CheckCircle, Lightbulb, Users, Calendar, Mic, Sparkles, Rocket, ShieldCheck, TrendingUp, Zap, X, Star } from 'lucide-react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import { Pagination, Autoplay } from 'swiper/modules';
-import Link from 'next/link';
-import Image from 'next/image';
+import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import {
+  Bell,
+  CheckCircle,
+  Lightbulb,
+  Users,
+  Calendar,
+  Mic,
+  Sparkles,
+  Rocket,
+  ShieldCheck,
+  TrendingUp,
+  Zap,
+  X,
+  Star,
+} from "lucide-react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination, Autoplay } from "swiper/modules";
+import Link from "next/link";
+import Image from "next/image";
 
-
-const CountUp = ({ end, duration = 5, suffix = "", prefix = "" }) => { // Increased duration to 5 seconds for slower animation
+const CountUp = ({ end, duration = 5, suffix = "", prefix = "" }) => {
+  // Increased duration to 5 seconds for slower animation
   const [count, setCount] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef(null);
@@ -25,7 +39,7 @@ const CountUp = ({ end, duration = 5, suffix = "", prefix = "" }) => { // Increa
           setIsVisible(true);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (ref.current) {
@@ -49,27 +63,31 @@ const CountUp = ({ end, duration = 5, suffix = "", prefix = "" }) => { // Increa
     const increment = end / steps;
 
     let currentStep = 0;
-    const timer = setInterval(() => {
-      start += increment;
-      currentStep++;
-      if (currentStep >= steps || start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.ceil(start)); // Use Math.ceil to ensure it reaches the end value cleanly
-      }
-    }, (duration * 1000) / steps); // Time per step in milliseconds, adjusted for the longer duration
+    const timer = setInterval(
+      () => {
+        start += increment;
+        currentStep++;
+        if (currentStep >= steps || start >= end) {
+          setCount(end);
+          clearInterval(timer);
+        } else {
+          setCount(Math.ceil(start)); // Use Math.ceil to ensure it reaches the end value cleanly
+        }
+      },
+      (duration * 1000) / steps,
+    ); // Time per step in milliseconds, adjusted for the longer duration
 
     return () => clearInterval(timer);
   }, [isVisible, end, duration]);
 
   return (
     <div ref={ref}>
-      {prefix}{count.toLocaleString()}{suffix}
+      {prefix}
+      {count.toLocaleString()}
+      {suffix}
     </div>
   );
 };
-
 
 const HomePage = ({ currentTime }) => {
   const [activeAccordion, setActiveAccordion] = useState(null);
@@ -78,7 +96,7 @@ const HomePage = ({ currentTime }) => {
     AOS.init({
       duration: 1000, // Increased duration to 1000ms for slower animations
       once: true,
-      easing: 'ease-out-quart'
+      easing: "ease-out-quart",
     });
   }, []);
 
@@ -88,146 +106,224 @@ const HomePage = ({ currentTime }) => {
 
   const testimonials = [
     {
-      quote: "This app changed my life! The museum-like interface makes organization feel like an art experience. Truly breathtaking design.",
+      quote:
+        "This app changed my life! The museum-like interface makes organization feel like an art experience. Truly breathtaking design.",
       author: "Jane Doe, Art Director",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The AI Assistant understands context like a human curator. It anticipates my needs before I articulate them. Revolutionary!",
+      quote:
+        "The AI Assistant understands context like a human curator. It anticipates my needs before I articulate them. Revolutionary!",
       author: "Dr. Marcus Chen, AI Researcher",
-      rating: 4
+      rating: 4,
     },
     {
-      quote: "Using this app feels like walking through a digital gallery. Every interaction is thoughtfully designed and visually stunning.",
+      quote:
+        "Using this app feels like walking through a digital gallery. Every interaction is thoughtfully designed and visually stunning.",
       author: "Sophia Laurent, UX Designer",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The museum-inspired aesthetic elevates mundane tasks into delightful experiences. It's functional art for daily life.",
+      quote:
+        "The museum-inspired aesthetic elevates mundane tasks into delightful experiences. It's functional art for daily life.",
       author: "Thomas Wright, Museum Curator",
-      rating: 4
+      rating: 4,
     },
     {
-      quote: "The seamless integration between design and functionality is unparalleled. It's like having a personal curator for my life.",
+      quote:
+        "The seamless integration between design and functionality is unparalleled. It's like having a personal curator for my life.",
       author: "Michael Johnson, Product Manager",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The attention to detail in the UI makes every interaction a pleasure. It's not just an app, it's an experience.",
+      quote:
+        "The attention to detail in the UI makes every interaction a pleasure. It's not just an app, it's an experience.",
       author: "Sarah Kim, Creative Director",
-      rating: 3
+      rating: 3,
     },
     {
-      quote: "I've tried countless productivity apps, but none blend aesthetics and functionality like this one. Truly revolutionary!",
+      quote:
+        "I've tried countless productivity apps, but none blend aesthetics and functionality like this one. Truly revolutionary!",
       author: "David Chen, Software Engineer",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The AI assistant anticipates my needs before I even realize them. It's like having a second brain that understands me perfectly.",
+      quote:
+        "The AI assistant anticipates my needs before I even realize them. It's like having a second brain that understands me perfectly.",
       author: "Emily Rodriguez, Marketing Executive",
-      rating: 4
+      rating: 4,
     },
     {
-      quote: "The museum-inspired design makes even mundane tasks feel special. It's transformed how I approach my daily routine.",
+      quote:
+        "The museum-inspired design makes even mundane tasks feel special. It's transformed how I approach my daily routine.",
       author: "James Wilson, Architect",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The level of personalization is incredible. It feels like the app was custom-made just for me and my workflow.",
+      quote:
+        "The level of personalization is incredible. It feels like the app was custom-made just for me and my workflow.",
       author: "Olivia Martin, Journalist",
-      rating: 4
+      rating: 4,
     },
     {
-      quote: "The elegant transitions and animations make using the app a delight. It's the perfect blend of form and function.",
+      quote:
+        "The elegant transitions and animations make using the app a delight. It's the perfect blend of form and function.",
       author: "Benjamin Lee, UI Designer",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "I've never been this organized in my life. The intelligent reminders and scheduling features are game-changers.",
+      quote:
+        "I've never been this organized in my life. The intelligent reminders and scheduling features are game-changers.",
       author: "Sophie Turner, Event Planner",
-      rating: 3
+      rating: 3,
     },
     {
-      quote: "The data visualization is both beautiful and insightful. It helps me understand my habits and improve my productivity.",
+      quote:
+        "The data visualization is both beautiful and insightful. It helps me understand my habits and improve my productivity.",
       author: "Daniel Harris, Data Analyst",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The cross-device sync works flawlessly. I can start a task on my phone and finish it on my desktop without missing a beat.",
+      quote:
+        "The cross-device sync works flawlessly. I can start a task on my phone and finish it on my desktop without missing a beat.",
       author: "Rachel Green, Consultant",
-      rating: 4
+      rating: 4,
     },
     {
-      quote: "The security features give me peace of mind. I know my personal data is protected like a priceless artifact.",
+      quote:
+        "The security features give me peace of mind. I know my personal data is protected like a priceless artifact.",
       author: "Thomas Baker, Financial Advisor",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The voice command integration is incredibly accurate. It feels like I'm conversing with a real assistant.",
+      quote:
+        "The voice command integration is incredibly accurate. It feels like I'm conversing with a real assistant.",
       author: "Amanda Scott, Executive Assistant",
-      rating: 4
+      rating: 4,
     },
     {
-      quote: "The contextual reminders are brilliant. They show up exactly when and where I need them.",
+      quote:
+        "The contextual reminders are brilliant. They show up exactly when and where I need them.",
       author: "Kevin Nguyen, Sales Director",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "The contact management system is intuitive yet powerful. It's transformed how I maintain professional relationships.",
+      quote:
+        "The contact management system is intuitive yet powerful. It's transformed how I maintain professional relationships.",
       author: "Jessica Parker, HR Manager",
-      rating: 3
+      rating: 3,
     },
     {
-      quote: "The analytics dashboard is a work of art. It turns productivity metrics into beautiful visualizations.",
+      quote:
+        "The analytics dashboard is a work of art. It turns productivity metrics into beautiful visualizations.",
       author: "Robert Taylor, Business Owner",
-      rating: 5
+      rating: 5,
     },
     {
-      quote: "This app has fundamentally changed how I approach productivity. It's not just a tool, it's a lifestyle upgrade.",
+      quote:
+        "This app has fundamentally changed how I approach productivity. It's not just a tool, it's a lifestyle upgrade.",
       author: "Elizabeth Moore, Professor",
-      rating: 4
-    }
+      rating: 4,
+    },
   ];
 
   const features = [
-    { icon: <Sparkles className="w-12 h-12 text-amber-500" />, title: "AI-Powered Insights", description: "Predictive assistance that learns your patterns to anticipate needs before you ask" },
-    { icon: <ShieldCheck className="w-12 h-12 text-amber-500" />, title: "Gallery-Grade Security", description: "Military-grade encryption with biometric authentication for your private data" },
-    { icon: <Rocket className="w-12 h-12 text-amber-500" />, title: "Lightning Performance", description: "Instant response times powered by optimized neural networks" },
-    { icon: <Lightbulb className="w-12 h-12 text-amber-500" />, title: "Curated Experiences", description: "Personalized workflows designed like museum exhibitions" },
-    { icon: <Users className="w-12 h-12 text-amber-500" />, title: "Concierge Support", description: "24/7 premium assistance with human-AI collaboration" },
-    { icon: <CheckCircle className="w-12 h-12 text-amber-500" />, title: "Omnichannel Sync", description: "Seamless continuity across all your devices and platforms" }
+    {
+      icon: <Sparkles className="w-12 h-12 text-amber-500" />,
+      title: "AI-Powered Insights",
+      description:
+        "Predictive assistance that learns your patterns to anticipate needs before you ask",
+    },
+    {
+      icon: <ShieldCheck className="w-12 h-12 text-amber-500" />,
+      title: "Gallery-Grade Security",
+      description:
+        "Military-grade encryption with biometric authentication for your private data",
+    },
+    {
+      icon: <Rocket className="w-12 h-12 text-amber-500" />,
+      title: "Lightning Performance",
+      description:
+        "Instant response times powered by optimized neural networks",
+    },
+    {
+      icon: <Lightbulb className="w-12 h-12 text-amber-500" />,
+      title: "Curated Experiences",
+      description: "Personalized workflows designed like museum exhibitions",
+    },
+    {
+      icon: <Users className="w-12 h-12 text-amber-500" />,
+      title: "Concierge Support",
+      description: "24/7 premium assistance with human-AI collaboration",
+    },
+    {
+      icon: <CheckCircle className="w-12 h-12 text-amber-500" />,
+      title: "Omnichannel Sync",
+      description: "Seamless continuity across all your devices and platforms",
+    },
   ];
 
   const capabilities = [
-    { icon: <Users className="w-12 h-12 text-amber-500" />, title: "Intelligent Contacts", description: "Relationship mapping with AI-powered insights and context" },
-    { icon: <Calendar className="w-12 h-12 text-amber-500" />, title: "Curated Scheduling", description: "Artful time management that balances priorities and energy" },
-    { icon: <Bell className="w-12 h-12 text-amber-500" />, title: "Contextual Reminders", description: "Location-aware notifications with emotional intelligence" },
-    { icon: <Mic className="w-12 h-12 text-amber-500" />, title: "Conversational AI", description: "Natural language processing that understands nuance and intent" },
-    { icon: <TrendingUp className="w-12 h-12 text-amber-500" />, title: "Life Analytics", description: "Beautiful data visualizations of your personal growth journey" },
-    { icon: <Zap className="w-12 h-12 text-amber-500" />, title: "Momentum System", description: "Celebrating progress with artistic achievement displays" }
+    {
+      icon: <Users className="w-12 h-12 text-amber-500" />,
+      title: "Intelligent Contacts",
+      description: "Relationship mapping with AI-powered insights and context",
+    },
+    {
+      icon: <Calendar className="w-12 h-12 text-amber-500" />,
+      title: "Curated Scheduling",
+      description: "Artful time management that balances priorities and energy",
+    },
+    {
+      icon: <Bell className="w-12 h-12 text-amber-500" />,
+      title: "Contextual Reminders",
+      description: "Location-aware notifications with emotional intelligence",
+    },
+    {
+      icon: <Mic className="w-12 h-12 text-amber-500" />,
+      title: "Conversational AI",
+      description:
+        "Natural language processing that understands nuance and intent",
+    },
+    {
+      icon: <TrendingUp className="w-12 h-12 text-amber-500" />,
+      title: "Life Analytics",
+      description:
+        "Beautiful data visualizations of your personal growth journey",
+    },
+    {
+      icon: <Zap className="w-12 h-12 text-amber-500" />,
+      title: "Momentum System",
+      description: "Celebrating progress with artistic achievement displays",
+    },
   ];
 
   const faqs = [
     {
       question: "How does the AI Assistant help in daily tasks?",
-      answer: "Our AI acts as your personal curator, intelligently organizing information while providing anticipatory suggestions based on your behavioral patterns."
+      answer:
+        "Our AI acts as your personal curator, intelligently organizing information while providing anticipatory suggestions based on your behavioral patterns.",
     },
     {
       question: "Is my personal data secure?",
-      answer: "We employ gallery-grade security protocols with end-to-end encryption and biometric authentication, treating your data like priceless artifacts."
+      answer:
+        "We employ gallery-grade security protocols with end-to-end encryption and biometric authentication, treating your data like priceless artifacts.",
     },
     {
       question: "Can I customize the interface?",
-      answer: "Absolutely. Our exhibition-style themes allow you to curate visual experiences ranging from Renaissance elegance to futuristic digital art."
+      answer:
+        "Absolutely. Our exhibition-style themes allow you to curate visual experiences ranging from Renaissance elegance to futuristic digital art.",
     },
     {
       question: "What makes this different from other assistants?",
-      answer: "We blend cutting-edge AI with museum-inspired design philosophy, transforming productivity into an art form through emotionally intelligent interactions."
+      answer:
+        "We blend cutting-edge AI with museum-inspired design philosophy, transforming productivity into an art form through emotionally intelligent interactions.",
     },
     {
       question: "How do I get started?",
-      answer: "Simply begin your journey by creating an account. Our setup process guides you like a museum tour, personalizing as we learn about you."
-    }
+      answer:
+        "Simply begin your journey by creating an account. Our setup process guides you like a museum tour, personalizing as we learn about you.",
+    },
   ];
 
   return (
@@ -242,6 +338,7 @@ const HomePage = ({ currentTime }) => {
             alt="AI Art Gallery"
             width={500}
             height={500}
+            loading="eager"
             className="w-full h-full object-cover opacity-30"
           />
           {/* Blend from black at the bottom of hero to transparent */}
@@ -273,7 +370,8 @@ const HomePage = ({ currentTime }) => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4, duration: 1 }} // Increased duration and delay
             >
-              Where artificial intelligence meets museum-grade elegance. Experience personal organization as a form of digital art.
+              Where artificial intelligence meets museum-grade elegance.
+              Experience personal organization as a form of digital art.
             </motion.p>
 
             <motion.div
@@ -289,7 +387,7 @@ const HomePage = ({ currentTime }) => {
                   Begin Your Exhibition
                 </button>
               </Link>
-              <button className="px-8 py-4 bg-transparent text-white border border-amber-500 font-bold rounded-full text-lg shadow-lg backdrop-blur-sm hover:bg-amber-500/10 transition-colors duration-500"> 
+              <button className="px-8 py-4 bg-transparent text-white border border-amber-500 font-bold rounded-full text-lg shadow-lg backdrop-blur-sm hover:bg-amber-500/10 transition-colors duration-500">
                 Gallery Tour
               </button>
             </motion.div>
@@ -332,11 +430,21 @@ const HomePage = ({ currentTime }) => {
       <section className="py-24 w-full bg-gradient-to-b from-black to-purple-900/20">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-aos="fade-up" data-aos-duration="1000"> 
+            <h2
+              className="text-4xl md:text-5xl font-bold text-white mb-6"
+              data-aos="fade-up"
+              data-aos-duration="1000"
+            >
               The <span className="text-amber-400"> Gallery</span> Experience
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
-              Step into a world where technology and artistry converge to redefine personal productivity
+            <p
+              className="text-xl text-gray-400 max-w-3xl mx-auto"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
+              Step into a world where technology and artistry converge to
+              redefine personal productivity
             </p>
           </div>
 
@@ -355,7 +463,10 @@ const HomePage = ({ currentTime }) => {
                       className="w-full h-full object-cover"
                       poster="https://images.unsplash.com/photo-1635070040809-4a1031c9c71d?q=80&w=2070&auto=format&fit=crop"
                     >
-                      <source src="https://framerusercontent.com/assets/65khzBt0drXZt8Dg7XpHhJbP9tk.mp4" type="video/mp4" />
+                      <source
+                        src="https://framerusercontent.com/assets/65khzBt0drXZt8Dg7XpHhJbP9tk.mp4"
+                        type="video/mp4"
+                      />
                       Your browser does not support the video tag.
                     </video>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
@@ -364,12 +475,19 @@ const HomePage = ({ currentTime }) => {
               </div>
             </div>
 
-            <div data-aos="fade-left" data-aos-delay="200" data-aos-duration="1000">
-              <h3 className="text-3xl font-bold text-white mb-6">Designed Like Masterpieces</h3>
+            <div
+              data-aos="fade-left"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
+              <h3 className="text-3xl font-bold text-white mb-6">
+                Designed Like Masterpieces
+              </h3>
               <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-                Our interface draws inspiration from the world greatest museums, transforming routine tasks into
-                gallery-worthy experiences. Every interaction is crafted with the precision of a master artist and
-                the intelligence of cutting-edge AI.
+                Our interface draws inspiration from the world greatest museums,
+                transforming routine tasks into gallery-worthy experiences.
+                Every interaction is crafted with the precision of a master
+                artist and the intelligence of cutting-edge AI.
               </p>
 
               <div className="space-y-6">
@@ -380,9 +498,12 @@ const HomePage = ({ currentTime }) => {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-xl font-bold text-white mb-2">Curated Workflows</h4>
+                    <h4 className="text-xl font-bold text-white mb-2">
+                      Curated Workflows
+                    </h4>
                     <p className="text-gray-400">
-                      Like a museum exhibition, your tasks flow in a thoughtfully organized journey
+                      Like a museum exhibition, your tasks flow in a
+                      thoughtfully organized journey
                     </p>
                   </div>
                 </div>
@@ -394,9 +515,12 @@ const HomePage = ({ currentTime }) => {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-xl font-bold text-white mb-2">Immersive Focus</h4>
+                    <h4 className="text-xl font-bold text-white mb-2">
+                      Immersive Focus
+                    </h4>
                     <p className="text-gray-400">
-                      Gallery-inspired environments minimize distractions and maximize presence
+                      Gallery-inspired environments minimize distractions and
+                      maximize presence
                     </p>
                   </div>
                 </div>
@@ -408,9 +532,12 @@ const HomePage = ({ currentTime }) => {
                     </div>
                   </div>
                   <div className="ml-4">
-                    <h4 className="text-xl font-bold text-white mb-2">Artistic Analytics</h4>
+                    <h4 className="text-xl font-bold text-white mb-2">
+                      Artistic Analytics
+                    </h4>
                     <p className="text-gray-400">
-                      Your productivity data visualized as beautiful information art
+                      Your productivity data visualized as beautiful information
+                      art
                     </p>
                   </div>
                 </div>
@@ -424,11 +551,21 @@ const HomePage = ({ currentTime }) => {
       <section className="py-24 w-full bg-gradient-to-b from-purple-900/20 to-black">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-aos="fade-up" data-aos-duration="1000">
+            <h2
+              className="text-4xl md:text-5xl font-bold text-white mb-6"
+              data-aos="fade-up"
+              data-aos-duration="1000"
+            >
               The <span className="text-amber-400">Permanent</span> Collection
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
-              Our core features - timeless innovations designed with museum-grade craftsmanship
+            <p
+              className="text-xl text-gray-400 max-w-3xl mx-auto"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
+              Our core features - timeless innovations designed with
+              museum-grade craftsmanship
             </p>
           </div>
 
@@ -446,7 +583,9 @@ const HomePage = ({ currentTime }) => {
                 <div className="mb-6 p-4 bg-amber-500/10 rounded-full">
                   {feature.icon}
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">{feature.title}</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">
+                  {feature.title}
+                </h4>
                 <p className="text-gray-400">{feature.description}</p>
               </motion.div>
             ))}
@@ -476,7 +615,9 @@ const HomePage = ({ currentTime }) => {
             data-aos-delay="200"
             data-aos-duration="1000"
           >
-            Chappie is more than just an app . it is a dedicated AI partner, learning, adapting, and empowering your every move with precision and care.
+            Chappie is more than just an app . it is a dedicated AI partner,
+            learning, adapting, and empowering your every move with precision
+            and care.
           </motion.p>
           <Link href="/login">
             <motion.button
@@ -495,10 +636,19 @@ const HomePage = ({ currentTime }) => {
       <section className="py-24 w-full bg-gradient-to-b from-purple-900/40 to-black">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-aos="fade-up" data-aos-duration="1000">
+            <h2
+              className="text-4xl md:text-5xl font-bold text-white mb-6"
+              data-aos="fade-up"
+              data-aos-duration="1000"
+            >
               <span className="text-amber-400">Curatorial</span> Capabilities
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+            <p
+              className="text-xl text-gray-400 max-w-3xl mx-auto"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
               Advanced tools that transform daily organization into an art form
             </p>
           </div>
@@ -517,7 +667,9 @@ const HomePage = ({ currentTime }) => {
                 <div className="mb-6 p-4 bg-amber-500/10 rounded-full">
                   {capability.icon}
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-4">{capability.title}</h4>
+                <h4 className="text-2xl font-bold text-white mb-4">
+                  {capability.title}
+                </h4>
                 <p className="text-gray-400">{capability.description}</p>
               </motion.div>
             ))}
@@ -529,10 +681,19 @@ const HomePage = ({ currentTime }) => {
       <section className="py-24 w-full bg-gradient-to-b from-black to-purple-900/30">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-aos="fade-up" data-aos-duration="1000">
+            <h2
+              className="text-4xl md:text-5xl font-bold text-white mb-6"
+              data-aos="fade-up"
+              data-aos-duration="1000"
+            >
               Patron <span className="text-amber-400">Testimonials</span>
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+            <p
+              className="text-xl text-gray-400 max-w-3xl mx-auto"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
               Hear from those who have experienced our gallery of productivity
             </p>
           </div>
@@ -543,9 +704,10 @@ const HomePage = ({ currentTime }) => {
             slidesPerView={1}
             pagination={{
               clickable: true,
-              el: '.custom-pagination',
-              bulletClass: 'swiper-pagination-bullet bg-amber-500',
-              bulletActiveClass: 'swiper-pagination-bullet-active !bg-amber-400'
+              el: ".custom-pagination",
+              bulletClass: "swiper-pagination-bullet bg-amber-500",
+              bulletActiveClass:
+                "swiper-pagination-bullet-active !bg-amber-400",
             }}
             autoplay={{ delay: 8000, disableOnInteraction: false }} // Increased autoplay delay for slower sliding
             loop={true}
@@ -568,17 +730,29 @@ const HomePage = ({ currentTime }) => {
                       {testimonial.author.charAt(0)}
                     </div>
                     <div>
-                      <h4 className="text-xl font-bold text-white">{testimonial.author.split(',')[0]}</h4>
-                      <p className="text-amber-500">{testimonial.author.split(',')[1]}</p>
+                      <h4 className="text-xl font-bold text-white">
+                        {testimonial.author.split(",")[0]}
+                      </h4>
+                      <p className="text-amber-500">
+                        {testimonial.author.split(",")[1]}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-gray-300 text-lg italic">{testimonial.quote}</p>
+                  <p className="text-gray-300 text-lg italic">
+                    {testimonial.quote}
+                  </p>
                   <div className="flex mt-6">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-amber-500 fill-current" />
+                      <Star
+                        key={i}
+                        className="w-5 h-5 text-amber-500 fill-current"
+                      />
                     ))}
                     {[...Array(5 - testimonial.rating)].map((_, i) => (
-                      <Star key={i + testimonial.rating} className="w-5 h-5 text-gray-600" />
+                      <Star
+                        key={i + testimonial.rating}
+                        className="w-5 h-5 text-gray-600"
+                      />
                     ))}
                   </div>
                 </div>
@@ -595,10 +769,19 @@ const HomePage = ({ currentTime }) => {
       <section className="py-24 w-full bg-gradient-to-b from-purple-900/30 to-black">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-aos="fade-up" data-aos-duration="1000">
+            <h2
+              className="text-4xl md:text-5xl font-bold text-white mb-6"
+              data-aos="fade-up"
+              data-aos-duration="1000"
+            >
               Curators <span className="text-amber-400">Notes</span>
             </h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
+            <p
+              className="text-xl text-gray-400 max-w-3xl mx-auto"
+              data-aos="fade-up"
+              data-aos-delay="200"
+              data-aos-duration="1000"
+            >
               Answers to common questions about our gallery of productivity
             </p>
           </div>
@@ -613,16 +796,28 @@ const HomePage = ({ currentTime }) => {
                 data-aos-duration="1000"
               >
                 <button
-                  className={`flex justify-between items-center w-full p-6 text-left ${activeAccordion === index ? 'bg-gray-800/50' : ''}`}
+                  className={`flex justify-between items-center w-full p-6 text-left ${activeAccordion === index ? "bg-gray-800/50" : ""}`}
                   onClick={() => toggleAccordion(index)}
                 >
-                  <h3 className="text-xl font-bold text-white">{faq.question}</h3>
+                  <h3 className="text-xl font-bold text-white">
+                    {faq.question}
+                  </h3>
                   <div className="ml-4 flex-shrink-0">
                     {activeAccordion === index ? (
                       <X className="w-6 h-6 text-amber-500" />
                     ) : (
-                      <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                      <svg
+                        className="w-6 h-6 text-amber-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        ></path>
                       </svg>
                     )}
                   </div>
@@ -631,7 +826,7 @@ const HomePage = ({ currentTime }) => {
                   <motion.div
                     className="p-6 pt-0 text-gray-300"
                     initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                    animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.4 }} // Increased accordion transition duration
                   >
@@ -649,11 +844,22 @@ const HomePage = ({ currentTime }) => {
         <div className="max-w-6xl mx-auto text-center px-6">
           <div className="relative bg-gradient-to-r from-amber-500/10 to-purple-500/10 rounded-3xl p-1 backdrop-blur-sm">
             <div className="bg-gradient-to-b from-gray-900 to-black rounded-3xl p-12">
-              <h2 className="text-4xl md:text-5xl font-bold text-white mb-6" data-aos="fade-up" data-aos-duration="1000">
-                Reserve Your <span className="text-amber-400">Private Viewing</span>
+              <h2
+                className="text-4xl md:text-5xl font-bold text-white mb-6"
+                data-aos="fade-up"
+                data-aos-duration="1000"
+              >
+                Reserve Your{" "}
+                <span className="text-amber-400">Private Viewing</span>
               </h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-10" data-aos="fade-up" data-aos-delay="200" data-aos-duration="1000">
-                Experience the future of personal productivity in our exclusive gallery
+              <p
+                className="text-xl text-gray-400 max-w-3xl mx-auto mb-10"
+                data-aos="fade-up"
+                data-aos-delay="200"
+                data-aos-duration="1000"
+              >
+                Experience the future of personal productivity in our exclusive
+                gallery
               </p>
               <Link href="/login">
                 <button

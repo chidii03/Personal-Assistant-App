@@ -1007,7 +1007,7 @@ const AIAssistantPage = () => {
 
   return (
     <motion.div
-      className="flex flex-col items-center justify-center w-full min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-800 text-white"
+      className="flex flex-col items-center justify-center w-full min-h-screen bg-gradient-to-br from-purple-900 via-black to-purple-800 text-white mt-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
