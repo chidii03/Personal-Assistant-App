@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Phone, Mail } from "lucide-react";
+import { MapPin, Phone, Mail, Loader2 } from "lucide-react"; // Added Loader2
 import { FaWhatsapp, FaXTwitter, FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa6';
 import { toast } from "react-toastify";
 
 const Footer = () => {
   const year = new Date().getFullYear();
   const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false); 
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
@@ -16,6 +17,8 @@ const Footer = () => {
       toast.error("Please enter your email address.");
       return;
     }
+
+    setIsLoading(true); 
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`, {
@@ -37,6 +40,8 @@ const Footer = () => {
     } catch (error) {
       console.error('Subscription error:', error);
       toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false); // Stop loading animation whether successful or not
     }
   };
 
@@ -75,7 +80,7 @@ const Footer = () => {
 
             {/* Social Links */}
             <div className="flex items-center gap-4 mt-8">
-              <a href="https://www.facebook.com/profile.php?id=61566909757271"target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[#1877F2] transition-colors">
+              <a href="https://www.facebook.com/profile.php?id=61566909757271" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-[#1877F2] transition-colors">
                 <FaFacebook className="w-6 h-6" />
               </a>
               <a href="https://instagram.com/nexelitee" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-purple-600 transition-colors">
@@ -119,12 +124,20 @@ const Footer = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading} 
               />
               <button
                 type="submit"
-                className="bg-amber-500 text-black px-6 py-2 rounded-md font-semibold hover:bg-amber-600 transition-colors shadow-lg"
+                disabled={isLoading}
+                className={`flex items-center justify-center bg-amber-500 text-black px-6 py-2 rounded-md font-semibold transition-all shadow-lg min-w-[120px] ${
+                  isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-amber-600"
+                }`}
               >
-                Subscribe
+                {isLoading ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  "Subscribe"
+                )}
               </button>
             </form>
           </div>

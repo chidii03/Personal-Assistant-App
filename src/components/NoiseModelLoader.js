@@ -26,7 +26,7 @@ const NoiseModelLoader = ({ setNoiseModel }) => {
     };
   }, [setNoiseModel]);
 
-  return null;www
+  return null;
 };
 
 export default dynamic(() => Promise.resolve(NoiseModelLoader), { ssr: false });
