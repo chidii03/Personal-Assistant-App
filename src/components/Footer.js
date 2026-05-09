@@ -11,40 +11,81 @@ const Footer = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false); 
 
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!email) {
-      toast.error("Please enter your email address.");
+const handleSubscribe = async (e) => {
+  e.preventDefault();
+
+  if (!email.trim()) {
+    toast.error("Please enter your email address.");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const controller = new AbortController();
+
+    // Prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 15000);
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+        }),
+        signal: controller.signal,
+      }
+    );
+
+    clearTimeout(timeoutId);
+
+    let data = {};
+
+    // Prevent crash if backend returns empty body
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      data = {};
+    }
+
+    if (response.ok) {
+      toast.success(
+        data.message || "Successfully subscribed to newsletter!"
+      );
+
+      setEmail("");
+
+      // Force stop loading immediately
+      setIsLoading(false);
+
       return;
     }
 
-    setIsLoading(true); 
+    toast.error(
+      data.error ||
+        data.message ||
+        "Failed to subscribe. Please try again."
+    );
+  } catch (error) {
+    console.error("Subscription error:", error);
 
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/subscribe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success(data.message);
-        setEmail("");
-      } else {
-        toast.error(data.error || 'Failed to subscribe.');
-      }
-    } catch (error) {
-      console.error('Subscription error:', error);
-      toast.error('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false); // Stop loading animation whether successful or not
+    if (error.name === "AbortError") {
+      toast.error("Request timeout. Please try again.");
+    } else {
+      toast.error(
+        "Unable to connect to server. Please try again later."
+      );
     }
-  };
-
+  } finally {
+    setIsLoading(false);
+  }
+};
   return (
     <motion.footer 
       className="bg-gradient-to-b from-gray-900 via-purple-900 to-black text-slate-300 py-12 md:py-16 overflow-hidden w-full"

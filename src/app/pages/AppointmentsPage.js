@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { Calendar, Plus, Edit, Trash2, Search, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/components/AuthContext';
 import Select from 'react-select';
-import Flag from 'react-world-flags';
+import ReactCountryFlag from 'react-country-flag';
 import locationsData from '@/data/locations';
 
 // Reusable components (kept consistent)
@@ -130,17 +130,25 @@ const LocationSelect = ({ value, onChange }) => {
       },
     }),
   };
+  
+const formatOptionLabel = ({ code, label }) => (
+  <div className="flex items-center space-x-2">
+    {code ? (
+      <ReactCountryFlag
+        countryCode={code.toUpperCase()}
+        svg
+        style={{
+          width: '1.5em',
+          height: '1.5em',
+        }}
+      />
+    ) : (
+      <Calendar className="w-4 h-4 text-slate-400" />
+    )}
 
-  const formatOptionLabel = ({ code, label }) => (
-    <div className="flex items-center space-x-2">
-      {code ? (
-        <Flag code={code} width="20" />
-      ) : (
-        <Calendar className="w-4 h-4 text-slate-400" />
-      )}
-      <span>{label}</span>
-    </div>
-  );
+    <span>{label}</span>
+  </div>
+);
 
   return (
     <Select

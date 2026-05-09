@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
@@ -158,16 +158,21 @@ const AIAssistantPage = () => {
       "Accessing my knowledge networks for that information...",
   };
 
+  // Cleanup function
   useEffect(() => {
     return () => {
+      // Cancel any ongoing speech
       if (window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
       }
 
+      // Clear all pending reminders
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       Object.values(reminderTimeouts.current).forEach((timeout) => {
         clearTimeout(timeout);
       });
 
+      // Clean up audio resources
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
@@ -185,11 +190,33 @@ const AIAssistantPage = () => {
     };
   }, []);
 
-  // Keep the model loader disabled for stability in production.
   useEffect(() => {
-    console.log("AI Assistant initialized");
+    const loadNoiseModel = async () => {
+      try {
+        const tf = await import("@tensorflow/tfjs");
+        const speechCommands =
+          await import("@tensorflow-models/speech-commands");
+
+        await tf.ready();
+        const recognizer = speechCommands.create("BROWSER_FFT");
+        await recognizer.ensureModelLoaded();
+        noiseModelRef.current = recognizer;
+        console.log("Noise cancellation model loaded");
+      } catch (error) {
+        console.error("Failed to load noise model:", error);
+      }
+    };
+
+    loadNoiseModel();
+    // Dynamically import TensorFlow with SSR disabled
+    const loadTensorFlow = async () => {
+      const tf = await import("@tensorflow/tfjs");
+      const speechCommands = await import("@tensorflow-models/speech-commands");
+      return { tf, speechCommands };
+    };
   }, []);
 
+  // Speak text with female voice similar to Alexa/Google
   const speakText = (text, callback = () => {}) => {
     if (!("speechSynthesis" in window)) {
       toast.error("Speech synthesis not supported");
@@ -205,6 +232,7 @@ const AIAssistantPage = () => {
     utterance.lang = lang;
     utterance.rate = 1.0;
 
+    // Find voice similar to Alexa/Google (female, natural sounding)
     const voices = window.speechSynthesis.getVoices();
     let preferredVoice = voices.find(
       (voice) =>
@@ -236,6 +264,7 @@ const AIAssistantPage = () => {
     window.speechSynthesis.speak(utterance);
   };
 
+  // Sets up the audio visualizer on the canvas
   const setupAudioVisualizer = async (stream) => {
     if (!canvasRef.current) return;
 
@@ -283,6 +312,7 @@ const AIAssistantPage = () => {
     draw();
   };
 
+  // Stops the audio visualizer
   const stopAudioVisualizer = () => {
     if (animationFrameIdRef.current) {
       cancelAnimationFrame(animationFrameIdRef.current);
@@ -300,7 +330,9 @@ const AIAssistantPage = () => {
     }
   };
 
+  // Handles the voice command initiation and recognition
   const handleVoiceCommand = async () => {
+    // If already listening, stop recognition
     if (isListening) {
       if (recognitionRef.current) recognitionRef.current.stop();
       return;
@@ -326,7 +358,7 @@ const AIAssistantPage = () => {
       recognition.lang = lang;
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
-      recognition.continuous = false;
+      recognition.continuous = true;
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -342,6 +374,42 @@ const AIAssistantPage = () => {
         }
 
         if (finalCommand) {
+          // Check if this is likely voice using noise model
+          if (noiseModelRef.current) {
+            try {
+              const audioSamples = await getAudioData(stream);
+              if (audioSamples && audioSamples.length > 0) {
+                // Check if audio has significant energy (not silence/noise)
+                const maxAbs = Math.max(...audioSamples.map(Math.abs));
+                if (maxAbs < 0.01) {
+                  // Threshold for silence
+                  console.log("Ignoring silent audio");
+                  return;
+                }
+                const prediction =
+                  await noiseModelRef.current.recognize(audioSamples);
+                const noiseProbability = prediction.scores[0]; // Assuming index 0 is background_noise
+
+                if (noiseProbability > 0.75) {
+                  console.log(
+                    "Ignoring noise:",
+                    finalCommand,
+                    "Noise probability:",
+                    noiseProbability,
+                  );
+                  return;
+                }
+              } else {
+                console.log("No valid audio samples, skipping noise check");
+              }
+            } catch (error) {
+              console.warn(
+                "Noise model prediction failed, proceeding anyway:",
+                error.message,
+              );
+            }
+          }
+
           recognition.stop();
           setTranscript(finalCommand);
           handleCommand(finalCommand);
@@ -367,26 +435,14 @@ const AIAssistantPage = () => {
             .getTracks()
             .forEach((track) => track.stop());
         }
-
-        console.error("Recognition error:", event.error);
-
-        switch (event.error) {
-          case "no-speech":
-            setMessage("No speech detected");
-            break;
-          case "network":
-            setMessage(
-              "Speech service temporarily unavailable. Please check internet connection.",
-            );
-            break;
-          case "audio-capture":
-            toast.error("No microphone detected.");
-            break;
-          case "not-allowed":
-            toast.error("Microphone permission denied.");
-            break;
-          default:
-            toast.error(`Speech recognition error: ${event.error}`);
+        if (event.error !== "no-speech") {
+          console.error("Recognition error:", event.error);
+        }
+        if (event.error === "no-speech") {
+          // Silently handle no-speech by stopping and readying for next
+          setMessage("Ready for next command");
+        } else {
+          toast.error(`Speech recognition error: ${event.error}`);
         }
       };
 
@@ -404,6 +460,50 @@ const AIAssistantPage = () => {
     }
   };
 
+  // Get audio data for noise model (collect more samples for better detection)
+  const getAudioData = async (stream) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+      let collectedSamples = [];
+
+      source.connect(processor);
+      processor.connect(audioContext.destination);
+
+      return new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          cleanup();
+          if (collectedSamples.length > 0) {
+            resolve(new Float32Array(collectedSamples));
+          } else {
+            reject(new Error("No audio data collected"));
+          }
+        }, 1500); // Collect for 1.5 seconds
+
+        const cleanup = () => {
+          clearTimeout(timeout);
+          processor.disconnect();
+          source.disconnect();
+          if (audioContext.state !== "closed") {
+            audioContext.close().catch(console.error);
+          }
+        };
+
+        processor.onaudioprocess = (event) => {
+          const channelData = event.inputBuffer.getChannelData(0);
+          collectedSamples = [...collectedSamples, ...Array.from(channelData)];
+        };
+      });
+    } catch (error) {
+      console.warn("Error in getAudioData:", error.message);
+      throw error;
+    }
+  };
+
+  // Set reminder with exact timing
   const setExactReminder = (reminderText, triggerTime) => {
     const now = new Date().getTime();
     const timeout = triggerTime - now;
@@ -422,6 +522,7 @@ const AIAssistantPage = () => {
     return timeoutId;
   };
 
+  // Parses date from a given command string
   const parseDateFromCommand = (lowerCommand, now) => {
     let date = "";
     const today = now.toISOString().split("T")[0];
@@ -469,6 +570,7 @@ const AIAssistantPage = () => {
         "november",
         "december",
       ];
+      // Regex to capture month, day, and optional year
       const datePattern = new RegExp(
         `(?:on|for|at)\\s+(${monthNames.join("|")})\\s+(\\d{1,2})(?:(?:st|nd|rd|th),?\\s*|\\s+)(\\d{4})?`,
         "i",
@@ -480,22 +582,25 @@ const AIAssistantPage = () => {
           specificDateMatch[1].toLowerCase(),
         );
         const day = parseInt(specificDateMatch[2]);
+        // If year is not provided, use current year
         const year = specificDateMatch[3]
           ? parseInt(specificDateMatch[3])
           : now.getFullYear();
         const parsedDate = new Date(year, monthIndex, day);
         date = parsedDate.toISOString().split("T")[0];
       } else {
-        date = today;
+        date = today; // Default to today if no date specified
       }
     }
     return date;
   };
 
+  // Parses time (start and end) from a given command string
   const parseTimeFromCommand = (lowerCommand, now) => {
     let startTime = "";
     let endTime = "";
 
+    // Regex to capture time in various formats (e.g., 3 PM, 3pm, 3:00 PM, 15:00)
     const timePattern = /(\d{1,2}(?::\d{2})?\s?(?:a\.?m\.?|p\.?m\.?)?)/gi;
     const times = [];
     let match;
@@ -504,18 +609,19 @@ const AIAssistantPage = () => {
         match[1].trim() &&
         (/\d/.test(match[1]) || /(am|pm)/i.test(match[1]))
       ) {
-        times.push(match[1].replace(/\./g, ""));
+        times.push(match[1].replace(/\./g, "")); // Remove dots from a.m./p.m.
       }
     }
 
+    // Converts 12-hour time to 24-hour format
     const convertTo24Hour = (timeStr) => {
       let [h, m = "00"] = timeStr.replace(/(am|pm)/i, "").split(":");
       h = parseInt(h);
       const isPM = timeStr.toLowerCase().includes("p");
       const isAM = timeStr.toLowerCase().includes("a");
 
-      if (isPM && h < 12) h += 12;
-      if (isAM && h === 12) h = 0;
+      if (isPM && h < 12) h += 12; // Add 12 for PM times, unless it's 12 PM
+      if (isAM && h === 12) h = 0; // Convert 12 AM to 00 (midnight)
       return `${String(h).padStart(2, "0")}:${m.padStart(2, "0")}`;
     };
 
@@ -525,13 +631,13 @@ const AIAssistantPage = () => {
         endTime = convertTo24Hour(times[1]);
       }
     } else {
-      startTime = `${String(now.getHours()).padStart(2, "0")}:${String(
-        now.getMinutes(),
-      ).padStart(2, "0")}`;
+      // Default to current time if no time specified
+      startTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
     }
     return { startTime, endTime };
   };
 
+  // Function to get current time in a specific time zone
   const getCurrentTimeInZone = (zone) => {
     try {
       const options = {
@@ -550,20 +656,23 @@ const AIAssistantPage = () => {
     }
   };
 
+  // Main command handler
   const handleCommand = async (command) => {
     const lowerCommand = command.toLowerCase();
     const now = new Date();
     setMessage(`Processing: "${command}"`);
 
+    // --- Time Query Handling ---
     if (
       lowerCommand.includes("what time is it") ||
       lowerCommand.includes("time in")
     ) {
-      let zone = "Africa/Lagos";
+      let zone = "Africa/Lagos"; // Default to Nigeria UTC+1
       if (lowerCommand.includes("time in")) {
         const locationMatch = lowerCommand.match(/time in (.+)/i);
         if (locationMatch) {
           const location = locationMatch[1].trim();
+          // Simple mapping for common locations; expand as needed or use API
           const zoneMap = {
             afghanistan: "Asia/Kabul",
             albania: "Europe/Tirane",
@@ -769,10 +878,11 @@ const AIAssistantPage = () => {
       }
       const timeResponse = `The current time in ${zone} is ${getCurrentTimeInZone(zone)}.`;
       toast.info(timeResponse);
-      speakText(timeResponse);
+      speakText(timeResponse, handleVoiceCommand);
       return;
     }
 
+    // --- Personal Information Responses ---
     if (
       lowerCommand.includes("who are you") ||
       lowerCommand.includes("what is your name") ||
@@ -780,10 +890,9 @@ const AIAssistantPage = () => {
     ) {
       const response = `I am ${chappieInfo.name}, your personal assistant. It's a pleasure to meet you!`;
       toast.info(response);
-      speakText(response);
+      speakText(response, handleVoiceCommand);
       return;
     }
-
     if (
       lowerCommand.includes("who created you") ||
       lowerCommand.includes("who is your creator") ||
@@ -791,20 +900,18 @@ const AIAssistantPage = () => {
     ) {
       const response = chappieInfo.creatorDescription;
       toast.info(response);
-      speakText(response);
+      speakText(response, handleVoiceCommand);
       return;
     }
-
     if (
       lowerCommand.includes("what can you do") ||
       lowerCommand.includes("your capabilities")
     ) {
       const response = chappieInfo.capabilities;
       toast.info(response);
-      speakText(response);
+      speakText(response, handleVoiceCommand);
       return;
     }
-
     if (
       lowerCommand.includes("hello") ||
       lowerCommand.includes("hi") ||
@@ -815,28 +922,27 @@ const AIAssistantPage = () => {
           Math.floor(Math.random() * chappieInfo.greetings.length)
         ];
       toast.info(greeting);
-      speakText(greeting);
+      speakText(greeting, handleVoiceCommand);
       return;
     }
-
     if (lowerCommand.includes("switch to us english")) {
       setLang("en-US");
       const response =
         "Alright, I've switched to American English for you! What would you like to talk about?";
       toast.info(response);
-      speakText(response);
+      speakText(response, handleVoiceCommand);
       return;
     }
-
     if (lowerCommand.includes("switch to uk english")) {
       setLang("en-GB");
       const response =
         "Righto, I've switched to British English for you! What would you like to chat about?";
       toast.info(response);
-      speakText(response);
+      speakText(response, handleVoiceCommand);
       return;
     }
 
+    // --- Appointment Handling ---
     const appointmentKeywords = ["set", "add", "book", "schedule", "create"];
     const isAppointmentCommand =
       appointmentKeywords.some((keyword) => lowerCommand.includes(keyword)) &&
@@ -848,6 +954,7 @@ const AIAssistantPage = () => {
       const { startTime, endTime } = parseTimeFromCommand(lowerCommand, now);
 
       let location = "Unspecified Location";
+      // More robust location extraction
       const locationMatch = lowerCommand.match(
         /(?:in|at|for|to)\s+([a-zA-Z\s]+?)(?:(?=\s*(?:on|from|to|\d|by|$))|\s*$)/i,
       );
@@ -868,7 +975,7 @@ const AIAssistantPage = () => {
         const invalidMessage =
           "Invalid date or time format. Please specify clearly, e.g., 'tomorrow at 2 PM'.";
         toast.error(invalidMessage);
-        speakText(invalidMessage);
+        speakText(invalidMessage, handleVoiceCommand);
         return;
       }
 
@@ -882,11 +989,12 @@ const AIAssistantPage = () => {
         } catch (error) {
           const invalidMessage = "Invalid end time format.";
           toast.error(invalidMessage);
-          speakText(invalidMessage);
+          speakText(invalidMessage, handleVoiceCommand);
           return;
         }
       }
 
+      // Validate date and time
       if (
         appointmentDateTime.toISOString().split("T")[0] <
         now.toISOString().split("T")[0]
@@ -894,7 +1002,7 @@ const AIAssistantPage = () => {
         const pastDateMessage =
           "I cannot book an appointment for a past date. Please provide a future date.";
         toast.error(pastDateMessage);
-        speakText(pastDateMessage);
+        speakText(pastDateMessage, handleVoiceCommand);
         return;
       }
 
@@ -906,7 +1014,7 @@ const AIAssistantPage = () => {
         const pastTimeMessage =
           "I cannot book an appointment for a past time today. Please provide a future time.";
         toast.error(pastTimeMessage);
-        speakText(pastTimeMessage);
+        speakText(pastTimeMessage, handleVoiceCommand);
         return;
       }
 
@@ -914,10 +1022,11 @@ const AIAssistantPage = () => {
         const invalidTimeRangeMessage =
           "The end time must be after the start time for your appointment.";
         toast.error(invalidTimeRangeMessage);
-        speakText(invalidTimeRangeMessage);
+        speakText(invalidTimeRangeMessage, handleVoiceCommand);
         return;
       }
 
+      // Prepare appointment data
       const newAppointment = {
         userId: currentUser?.uid || "anonymous",
         date,
@@ -927,29 +1036,31 @@ const AIAssistantPage = () => {
       };
 
       try {
+        // Send appointment data to backend
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/appointments`,
           newAppointment,
         );
-
         if (response.status === 200 || response.status === 201) {
           const successMessage = `Appointment for "${newAppointment.location}" on ${newAppointment.date} from ${newAppointment.startTime}${newAppointment.endTime ? ` to ${newAppointment.endTime}` : ""} added successfully!`;
           toast.success(successMessage);
-          speakText(successMessage);
+          speakText(successMessage, handleVoiceCommand);
         } else {
           const errorMessage =
             "I encountered an issue saving the appointment. Please try again later.";
           toast.error(errorMessage);
-          speakText(errorMessage);
+          speakText(errorMessage, handleVoiceCommand);
         }
       } catch (error) {
         console.error("API call failed:", error);
         const networkErrorMessage =
           "I could not connect to the backend to save the appointment. Please check your network connection.";
         toast.error(networkErrorMessage);
-        speakText(networkErrorMessage);
+        speakText(networkErrorMessage, handleVoiceCommand);
       }
-    } else if (
+    }
+    // --- Reminder Handling ---
+    else if (
       lowerCommand.includes("set a reminder to") ||
       lowerCommand.includes("add a reminder to") ||
       lowerCommand.includes("remind me to")
@@ -961,6 +1072,7 @@ const AIAssistantPage = () => {
         const reminderText = reminderMatch[1].trim();
         let triggerTime = new Date();
 
+        // Parse specific time
         const timePattern = /at (\d{1,2}(?::\d{2})?\s?(?:am|pm)?)/i;
         const timeMatch = lowerCommand.match(timePattern);
 
@@ -977,10 +1089,13 @@ const AIAssistantPage = () => {
           if (isPM) hours += 12;
           triggerTime.setHours(hours, minutes, 0, 0);
 
+          // If time is in the past, set for next day
           if (triggerTime < now) {
             triggerTime.setDate(triggerTime.getDate() + 1);
           }
-        } else if (lowerCommand.includes("in")) {
+        }
+        // Parse relative time
+        else if (lowerCommand.includes("in")) {
           const timeMatch = lowerCommand.match(
             /in (\d+)\s*(minute|hour|day|week)s?/i,
           );
@@ -1003,15 +1118,17 @@ const AIAssistantPage = () => {
         if (timeoutId) {
           const response = `Reminder set for ${triggerTime.toLocaleTimeString()}: ${reminderText}`;
           toast.success(response);
-          speakText(response);
+          speakText(response, handleVoiceCommand);
         }
       } else {
         const reminderError =
           'I could not parse reminder details. Please say "Set a reminder to [Your task]".';
         toast.error(reminderError);
-        speakText(reminderError);
+        speakText(reminderError, handleVoiceCommand);
       }
-    } else if (
+    }
+    // --- Weather Forecast ---
+    else if (
       lowerCommand.includes("weather") ||
       lowerCommand.includes("forecast")
     ) {
@@ -1031,23 +1148,28 @@ const AIAssistantPage = () => {
           },
         );
 
-        speakText(response.data.response);
+        speakText(response.data.response, handleVoiceCommand);
       } catch (error) {
         console.error("Weather error:", error);
         speakText(
           "Couldn't retrieve weather information. Please check your connection and try again.",
+          handleVoiceCommand,
         );
       }
       return;
-    } else if (
+    }
+    // --- Nigerian States ---
+    else if (
       lowerCommand.includes("nigerian states") ||
       lowerCommand.includes("states in nigeria")
     ) {
       const response = `Nigeria has 36 states: ${nigerianStates.join(", ")}.`;
       toast.info(response);
-      speakText(response);
+      speakText(response, handleVoiceCommand);
       return;
-    } else if (
+    }
+    // --- Location/Directions ---
+    else if (
       lowerCommand.includes("where is") ||
       lowerCommand.includes("how far") ||
       lowerCommand.includes("directions to")
@@ -1064,15 +1186,18 @@ const AIAssistantPage = () => {
             userId: currentUser?.uid,
           },
         );
-        speakText(response.data.response);
+        speakText(response.data.response, handleVoiceCommand);
       } catch (error) {
         console.error("Directions error:", error);
         speakText(
           "Couldn't retrieve location information. Please check your connection and try again.",
+          handleVoiceCommand,
         );
       }
       return;
-    } else {
+    }
+    // --- General Knowledge ---
+    else {
       setMessage(chappieInfo.generalKnowledgeIntro);
       toast.info("Chappie: " + chappieInfo.generalKnowledgeIntro, {
         autoClose: 2000,
@@ -1080,7 +1205,7 @@ const AIAssistantPage = () => {
 
       try {
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/ai/query`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/ai/query`,
           {
             prompt: command,
             userId: currentUser?.uid || "anonymous",
@@ -1091,12 +1216,12 @@ const AIAssistantPage = () => {
 
         if (aiResponse) {
           setMessage(`Chappie says: "${aiResponse}"`);
-          speakText(aiResponse);
+          speakText(aiResponse, handleVoiceCommand);
         } else {
           const errorResponse =
             "I'm sorry, I couldn't generate a response for that. Please try rephrasing.";
           setMessage(errorResponse);
-          speakText(errorResponse);
+          speakText(errorResponse, handleVoiceCommand);
         }
       } catch (error) {
         console.error("Backend AI query failed:", error);
@@ -1110,7 +1235,7 @@ const AIAssistantPage = () => {
           </div>,
           { autoClose: false, closeOnClick: false },
         );
-        speakText(apiErrorMessage);
+        speakText(apiErrorMessage, handleVoiceCommand);
       }
     }
   };
