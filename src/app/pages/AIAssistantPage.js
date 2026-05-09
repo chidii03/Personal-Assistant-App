@@ -1038,7 +1038,7 @@ const AIAssistantPage = () => {
       try {
         // Send appointment data to backend
         const response = await axios.post(
-          "http://localhost:5000/api/appointments",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/appointments`,
           newAppointment,
         );
         if (response.status === 200 || response.status === 201) {
@@ -1141,7 +1141,7 @@ const AIAssistantPage = () => {
 
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/ai/query",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/ai/query`,
           {
             prompt: `weather in ${location}`,
             userId: currentUser?.uid,
@@ -1205,7 +1205,7 @@ const AIAssistantPage = () => {
 
       try {
         const response = await axios.post(
-          "http://localhost:5000/api/ai/query",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/ai/query`,
           {
             prompt: command,
             userId: currentUser?.uid || "anonymous",

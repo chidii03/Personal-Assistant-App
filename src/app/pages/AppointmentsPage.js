@@ -174,7 +174,7 @@ const AppointmentsPage = () => {
   const fetchAppointments = async () => {
     const userId = currentUser?.uid || 'anonymous';
     try {
-      const response = await fetch(`http://localhost:5000/api/appointments?userId=${userId}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?userId=${userId}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -235,13 +235,13 @@ const AppointmentsPage = () => {
 
       let response;
       if (editingAppointment) {
-        response = await fetch(`http://localhost:5000/api/appointments/${editingAppointment.id}`, {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments/${editingAppointment.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(appointmentData),
         });
       } else {
-        response = await fetch('http://localhost:5000/api/appointments', {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(appointmentData),

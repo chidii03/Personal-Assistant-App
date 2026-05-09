@@ -26,7 +26,7 @@ const NoiseModelLoader = ({ setNoiseModel }) => {
     };
   }, [setNoiseModel]);
 
-  return null; // This component doesn't render anything
+  return null;www
 };
 
 export default dynamic(() => Promise.resolve(NoiseModelLoader), { ssr: false });

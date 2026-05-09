@@ -14,7 +14,7 @@ export const ReminderProvider = ({ children }) => {
       if (!currentUser) return;
       
       try {
-        const response = await fetch(`http://localhost:5000/api/appointments?userId=${currentUser.uid}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/appointments?userId=${currentUser.uid}`);
         if (!response.ok) return;
         
         const appointments = await response.json();

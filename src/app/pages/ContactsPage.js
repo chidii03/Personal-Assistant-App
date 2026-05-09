@@ -487,7 +487,6 @@ const countryCodes = [
     minLen: 9,
     maxLen: 10,
   },
-  // Add other countries similarly...
 ];
 
 // Custom styles for react-select
@@ -592,7 +591,7 @@ const ContactsPage = () => {
     const userId = currentUser?.uid || "anonymous";
     try {
       const response = await fetch(
-        `http://localhost:5000/api/contacts?userId=${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/contacts?userId=${userId}`,
       );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -658,7 +657,7 @@ const ContactsPage = () => {
 
       if (editingContact) {
         const response = await fetch(
-          `http://localhost:5000/api/contacts/${editingContact.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/contacts/${editingContact.id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -679,7 +678,7 @@ const ContactsPage = () => {
         );
         toast.success("Contact updated successfully!");
       } else {
-        const response = await fetch("http://localhost:5000/api/contacts", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contacts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(contactData),

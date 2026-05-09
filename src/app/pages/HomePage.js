@@ -461,6 +461,7 @@ const HomePage = ({ currentTime }) => {
                       muted
                       playsInline
                       className="w-full h-full object-cover"
+                      loading="eager"
                       poster="https://images.unsplash.com/photo-1635070040809-4a1031c9c71d?q=80&w=2070&auto=format&fit=crop"
                     >
                       <source
